@@ -30,7 +30,7 @@ type Task struct {
 	ShortDesc string         `json:"short_desc"`
 	LongDesc  string         `json:"long_desc"`
 	Priority  string         `json:"priority"`
-	Status    bool           `json:"status"`
+	Status    string         `json:"status"`
 	Time      string         `json:"time"`
 	Date      string         `json:"date"`
 	Tags      pq.StringArray `json:"tags" gorm:"type:text[]"`
@@ -43,4 +43,27 @@ type Category struct {
 	Name   string `json:"name"`
 	Color  string `json:"color"`
 	UserID uint   `json:"user_id"`
+}
+
+// 4. Struct untuk Delete Task
+type DeleteTask struct {
+	IDs []uint `json:"ids"`
+}
+
+// 5. Struct untuk Update Task
+type UpdateTask struct {
+	Title     string   `json:"title"`
+	ShortDesc string   `json:"short_desc"`
+	LongDesc  string   `json:"long_desc"`
+	Priority  string   `json:"priority"`
+	Status    string   `json:"status" gorm:"default:'todo'"`
+	Time      string   `json:"time"`
+	Date      string   `json:"date"`
+	Tags      []string `json:"tags"`
+}
+
+// 6. Struct untuk Update Batch Status
+type UpdateBatchStatus struct {
+	IDs    []uint `json:"ids"`
+	Status string `json:"status"`
 }
