@@ -293,7 +293,7 @@ func ChangePassword(c *fiber.Ctx) error {
 	}
 
 	var user models.User
-	if err := config.DB.Where(&user, userID).First(&user).Error; err != nil {
+	if err := config.DB.First(&user, userID).Error; err != nil {
 		return c.Status(404).JSON(models.Ret{
 			Success: false,
 			Message: "User not found",
