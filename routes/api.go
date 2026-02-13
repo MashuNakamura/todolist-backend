@@ -8,6 +8,9 @@ import (
 func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 
+	// api/health
+	api.Get("/health", controllers.HealthCheck)
+
 	// Backend API Route
 	api.Post("/tasks", controllers.CreateTask)
 	api.Get("/tasks", controllers.GetAllTasks)

@@ -5,6 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// 0. Return Message
+type Ret struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Error   int    `json:"code"`
+	Data    any    `json:"data"`
+}
+
 // 1. Tabel Users
 type User struct {
 	gorm.Model
