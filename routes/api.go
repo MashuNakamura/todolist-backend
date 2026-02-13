@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/MashuNakamura/todolist-backend/controllers"
+	"github.com/MashuNakamura/todolist-backend/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,20 +18,24 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/login", controllers.Login)                    // Login
 	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
 	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
-	api.Post("/change-password", controllers.ChangePassword) // Change Password
+
+	// Protected Route
+	protected := api.Group("/", middleware.Protected)
+
+	protected.Post("/change-password", controllers.ChangePassword) // Change Password
 
 	// Task API Route
-	api.Post("/tasks", controllers.CreateTask)                     // Create
-	api.Get("/tasks", controllers.GetAllTasks)                     // Read All
-	api.Get("/tasks/:id", controllers.GetTaskByID)                 // Read One
-	api.Get("/tasks/user/:user_id", controllers.GetAllTasksByUser) // Read All by User
-	api.Put("/tasks/:id", controllers.UpdateTask)                  // Update
-	api.Delete("/tasks/:id", controllers.DeleteTask)               // Delete
-	api.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
+	protected.Post("/tasks", controllers.CreateTask)                     // Create
+	protected.Get("/tasks", controllers.GetAllTasks)                     // Read All
+	protected.Get("/tasks/:id", controllers.GetTaskByID)                 // Read One
+	protected.Get("/tasks/user/:user_id", controllers.GetAllTasksByUser) // Read All by User
+	protected.Put("/tasks/:id", controllers.UpdateTask)                  // Update
+	protected.Delete("/tasks/:id", controllers.DeleteTask)               // Delete
+	protected.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
 
 	// Category API Route
-	api.Post("/categories", controllers.CreateCategory)                   // Create
-	api.Get("/categories/user/:user_id", controllers.GetCategoriesByUser) // Read All
-	api.Put("/categories/:id", controllers.UpdateCategory)                // Update
-	api.Delete("/categories/:id", controllers.DeleteCategory)             // Delete
+	protected.Post("/categories", controllers.CreateCategory)                   // Create
+	protected.Get("/categories/user/:user_id", controllers.GetCategoriesByUser) // Read All
+	protected.Put("/categories/:id", controllers.UpdateCategory)                // Update
+	protected.Delete("/categories/:id", controllers.DeleteCategory)             // Delete
 }

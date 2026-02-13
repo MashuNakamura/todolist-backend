@@ -281,7 +281,7 @@ func ResetPassword(c *fiber.Ctx) error {
 
 // API Untuk Change Password
 func ChangePassword(c *fiber.Ctx) error {
-	userID := c.Params("id")
+	userID := c.Locals("user_id")
 
 	var input models.ChangePassword
 	if err := c.BodyParser(&input); err != nil {
