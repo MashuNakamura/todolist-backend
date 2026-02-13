@@ -19,6 +19,8 @@ type User struct {
 	Name       string     `json:"name"`
 	Email      string     `json:"email" gorm:"unique"`
 	Password   string     `json:"-"`
+	OTP        string     `json:"-"`
+	OTPExpiry  int64      `json:"-"`
 	Tasks      []Task     `json:"tasks"`
 	Categories []Category `json:"categories"`
 }
@@ -66,4 +68,22 @@ type UpdateTask struct {
 type UpdateBatchStatus struct {
 	IDs    []uint `json:"ids"`
 	Status string `json:"status"`
+}
+
+// 7. Struct untuk Forgot Password
+type ForgotPassword struct {
+	Email string `json:"email"`
+}
+
+// 8. Struct untuk Reset Password
+type ResetPassword struct {
+	Email    string `json:"email"`
+	OTP      string `json:"otp"`
+	Password string `json:"password"`
+}
+
+// 9. Struct untuk Change Password
+type ChangePassword struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }

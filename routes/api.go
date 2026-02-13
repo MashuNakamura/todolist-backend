@@ -22,6 +22,9 @@ func SetupRoutes(app *fiber.App) {
 	api.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
 
 	// User API Route
-	api.Post("/register", controllers.Register) // Register
-	api.Post("/login", controllers.Login)       // Login
+	api.Post("/register", controllers.Register)              // Register
+	api.Post("/login", controllers.Login)                    // Login
+	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
+	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
+	api.Post("/change-password", controllers.ChangePassword) // Change Password
 }

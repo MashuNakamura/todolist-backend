@@ -149,3 +149,204 @@ func Login(c *fiber.Ctx) error {
 		},
 	})
 }
+
+// API Untuk Forgot Password
+func ForgotPassword(c *fiber.Ctx) error {
+	var input models.ForgotPassword
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid input",
+			Error:   400,
+		})
+	}
+
+	if input.Email == "" {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Email is required",
+			Error:   400,
+		})
+	}
+
+	if !helper.IsValidEmail(input.Email) {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid email format",
+			Error:   400,
+		})
+	}
+
+	var user_cp models.User
+	if err := config.DB.Where("email = ?", input.Email).First(&user_cp).Error; err != nil {
+		return c.Status(404).JSON(models.Ret{
+			Success: false,
+			Message: "User not found",
+			Error:   404,
+		})
+	}
+
+	otp := helper.GenerateOTP()
+	user_cp.OTP = otp
+	user_cp.OTPExpiry = time.Now().Add(5 * time.Minute).Unix()
+
+	if err := config.DB.Save(&user_cp).Error; err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to generate OTP",
+			Error:   500,
+		})
+	}
+
+	println("==================================")
+	println("EMAIL KE:", user_cp.Email)
+	println("KODE OTP ANDA:", otp)
+	println("==================================")
+
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "OTP has been sent to your email",
+		Error:   200,
+	})
+}
+
+// API Untuk Reset Password
+func ResetPassword(c *fiber.Ctx) error {
+	var input models.ResetPassword
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid input",
+			Error:   400,
+		})
+	}
+
+	var user models.User
+	if err := config.DB.Where("email = ? AND otp = ?", input.Email, input.OTP).First(&user).Error; err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid Email or OTP",
+			Error:   400,
+		})
+	}
+
+	if time.Now().Unix() > user.OTPExpiry {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "OTP has expired",
+			Error:   400,
+		})
+	}
+
+	if !helper.IsStrongPassword(input.Password) {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+			Error:   400,
+		})
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err == nil {
+		return c.Status(400).JSON(models.Ret{Success: false, Message: "New password cannot be the same as old password", Error: 400})
+	}
+
+	hashNewPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), 10)
+	if err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to generate password hash",
+			Error:   500,
+		})
+	}
+
+	user.Password = string(hashNewPassword)
+	user.OTP = ""
+	user.OTPExpiry = 0
+
+	if err := config.DB.Save(&user).Error; err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to reset password",
+			Error:   500,
+		})
+	}
+
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "Password reset successfully",
+		Error:   200,
+	})
+}
+
+// API Untuk Change Password
+func ChangePassword(c *fiber.Ctx) error {
+	userID := c.Params("id")
+
+	var input models.ChangePassword
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid input",
+			Error:   400,
+		})
+	}
+
+	var user models.User
+	if err := config.DB.Where(&user, userID).First(&user).Error; err != nil {
+		return c.Status(404).JSON(models.Ret{
+			Success: false,
+			Message: "User not found",
+			Error:   404,
+		})
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.OldPassword)); err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Incorrect old password",
+			Error:   400,
+		})
+	}
+
+	if !helper.IsStrongPassword(input.NewPassword) {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+			Error:   400,
+		})
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.NewPassword))
+	if err == nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "New password cannot be the same as old password",
+			Error:   400,
+		})
+	}
+
+	hashNewPassword, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), 10)
+	if err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to generate password hash",
+			Error:   500,
+		})
+	}
+
+	user.Password = string(hashNewPassword)
+	if err := config.DB.Save(&user).Error; err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to change password",
+			Error:   500,
+		})
+	}
+
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "Password changed successfully",
+		Error:   200,
+	})
+}
