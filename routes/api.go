@@ -12,6 +12,13 @@ func SetupRoutes(app *fiber.App) {
 	// Health Check API Route
 	api.Get("/health", controllers.HealthCheck) // Health Check
 
+	// User API Route
+	api.Post("/register", controllers.Register)              // Register
+	api.Post("/login", controllers.Login)                    // Login
+	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
+	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
+	api.Post("/change-password", controllers.ChangePassword) // Change Password
+
 	// Task API Route
 	api.Post("/tasks", controllers.CreateTask)                     // Create
 	api.Get("/tasks", controllers.GetAllTasks)                     // Read All
@@ -21,10 +28,9 @@ func SetupRoutes(app *fiber.App) {
 	api.Delete("/tasks/:id", controllers.DeleteTask)               // Delete
 	api.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
 
-	// User API Route
-	api.Post("/register", controllers.Register)              // Register
-	api.Post("/login", controllers.Login)                    // Login
-	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
-	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
-	api.Post("/change-password", controllers.ChangePassword) // Change Password
+	// Category API Route
+	api.Post("/categories", controllers.CreateCategory)                   // Create
+	api.Get("/categories/user/:user_id", controllers.GetCategoriesByUser) // Read All
+	api.Put("/categories/:id", controllers.UpdateCategory)                // Update
+	api.Delete("/categories/:id", controllers.DeleteCategory)             // Delete
 }
