@@ -351,6 +351,26 @@ func ChangePassword(c *fiber.Ctx) error {
 	})
 }
 
+func GetProfile(c *fiber.Ctx) error {
+	userID := c.Locals("user_id")
+
+	var user models.User
+	if err := config.DB.Select("id, name, email").First(&user, userID).Error; err != nil {
+		return c.Status(404).JSON(models.Ret{
+			Success: false,
+			Message: "User not found",
+			Error:   404,
+		})
+	}
+
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "User found",
+		Error:   200,
+		Data:    user,
+	})
+}
+
 func Logout(c *fiber.Ctx) error {
 	return c.JSON(models.Ret{
 		Success: true,

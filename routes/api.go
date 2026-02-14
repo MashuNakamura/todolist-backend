@@ -18,6 +18,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/login", controllers.Login)                    // Login
 	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
 	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
+	api.Get("/profile", controllers.GetProfile)              // Read One User
 
 	// Protected Route
 	protected := api.Group("/", middleware.Protected)
