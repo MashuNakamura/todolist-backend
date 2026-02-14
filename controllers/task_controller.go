@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/MashuNakamura/todolist-backend/config"
 	"github.com/MashuNakamura/todolist-backend/models"
 	"github.com/gofiber/fiber/v2"
@@ -168,8 +170,20 @@ func UpdateTask(c *fiber.Ctx) error {
 	if updateTask.Time != "" {
 		task.Time = updateTask.Time
 	}
-	if updateTask.Date != "" {
-		task.Date = updateTask.Date
+	if updateTask.DueDate != "" {
+		parsedTime, err := time.Parse(time.RFC3339, updateTask.DueDate)
+		if err != nil {
+			// Try parsing as simple date (YYYY-MM-DD) if RFC3339 fails
+			parsedTime, err = time.Parse("2006-01-02", updateTask.DueDate)
+			if err != nil {
+				return c.Status(400).JSON(models.Ret{
+					Success: false,
+					Message: "Invalid due_date format (expected RFC3339 or YYYY-MM-DD)",
+					Error:   400,
+				})
+			}
+		}
+		task.DueDate = &parsedTime
 	}
 	if updateTask.Tags != nil {
 		task.Tags = pq.StringArray(updateTask.Tags)

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -34,7 +36,7 @@ type Task struct {
 	Priority  string         `json:"priority"`
 	Status    string         `json:"status"`
 	Time      string         `json:"time"`
-	Date      string         `json:"date"`
+	DueDate   *time.Time     `json:"due_date"`
 	Tags      pq.StringArray `json:"tags" gorm:"type:text[]"`
 	UserID    uint           `json:"user_id"`
 }
@@ -60,7 +62,7 @@ type UpdateTask struct {
 	Priority  string   `json:"priority"`
 	Status    string   `json:"status" gorm:"default:'todo'"`
 	Time      string   `json:"time"`
-	Date      string   `json:"date"`
+	DueDate   string   `json:"due_date"`
 	Tags      []string `json:"tags"`
 }
 
