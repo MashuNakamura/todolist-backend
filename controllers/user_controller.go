@@ -150,6 +150,53 @@ func Login(c *fiber.Ctx) error {
 	})
 }
 
+// API Untuk Update Profile
+func UpdateProfile(c *fiber.Ctx) error {
+	userID := c.Locals("user_id")
+
+	var input models.User
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "Invalid input",
+			Error:   400,
+		})
+	}
+
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return c.Status(404).JSON(models.Ret{
+			Success: false,
+			Message: "User not found",
+			Error:   404,
+		})
+	}
+
+	if user.Name == input.Name {
+		return c.Status(400).JSON(models.Ret{
+			Success: false,
+			Message: "No changes to update",
+			Error:   400,
+		})
+	}
+
+	user.Name = input.Name
+
+	if err := config.DB.Save(&user).Error; err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to update profile",
+			Error:   500,
+		})
+	}
+
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "Profile updated successfully",
+		Error:   200,
+	})
+}
+
 // API Untuk Forgot Password
 func ForgotPassword(c *fiber.Ctx) error {
 	var input models.ForgotPassword
@@ -351,6 +398,7 @@ func ChangePassword(c *fiber.Ctx) error {
 	})
 }
 
+// API Untuk Get Profile
 func GetProfile(c *fiber.Ctx) error {
 	userID := c.Locals("user_id")
 
@@ -371,6 +419,7 @@ func GetProfile(c *fiber.Ctx) error {
 	})
 }
 
+// API Untuk Logout
 func Logout(c *fiber.Ctx) error {
 	return c.JSON(models.Ret{
 		Success: true,
