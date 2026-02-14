@@ -22,6 +22,16 @@ func CreateTask(c *fiber.Ctx) error {
 		})
 	}
 
+	if userIdFromToken, ok := c.Locals("user_id").(float64); ok {
+		task.UserID = uint(userIdFromToken)
+	} else {
+		return c.Status(401).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Invalid User Session",
+			Error:   401,
+		})
+	}
+
 	if task.Title == "" {
 		return c.JSON(models.Ret{
 			Success: false,
