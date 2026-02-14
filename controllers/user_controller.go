@@ -350,3 +350,11 @@ func ChangePassword(c *fiber.Ctx) error {
 		Error:   200,
 	})
 }
+
+func Logout(c *fiber.Ctx) error {
+	return c.JSON(models.Ret{
+		Success: true,
+		Message: "Logout successfully",
+		Error:   200,
+	})
+}
