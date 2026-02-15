@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -258,9 +259,11 @@ func ForgotPassword(c *fiber.Ctx) error {
 	// Send Email
 	emailBody := "Your OTP code is: " + otp
 	if err := helper.SendEmail(user_cp.Email, "Reset Password OTP", emailBody); err != nil {
+		// Log the actual error for debugging
+		fmt.Println("Error sending email:", err)
 		return c.Status(500).JSON(models.Ret{
 			Success: false,
-			Message: "Failed to send email",
+			Message: "Failed to send email: " + err.Error(),
 			Error:   500,
 		})
 	}
