@@ -4,17 +4,19 @@ import (
 	"github.com/MashuNakamura/todolist-backend/config"
 	"github.com/MashuNakamura/todolist-backend/models"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 // API Untuk Create Category
 func CreateCategory(c *fiber.Ctx) error {
-	userToken, ok := c.Locals("user").(*jwt.Token)
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
 	if !ok {
-		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+		return c.Status(401).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Invalid User Session",
+			Error:   401,
+		})
 	}
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
 
 	var cat models.Category
 	if err := c.BodyParser(&cat); err != nil {
@@ -57,18 +59,15 @@ func CreateCategory(c *fiber.Ctx) error {
 
 // API Untuk Get Category
 func GetCategoriesByUser(c *fiber.Ctx) error {
-	userLocal := c.Locals("user")
-	if userLocal == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{
 			Success: false,
-			Message: "Unauthorized: Token not found in context",
+			Message: "Unauthorized: Invalid User Session",
 			Error:   401,
 		})
 	}
-
-	userToken := c.Locals("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
 
 	var cats []models.Category
 	if err := config.DB.Where("user_id = ?", userID).Find(&cats).Error; err != nil {
@@ -89,20 +88,17 @@ func GetCategoriesByUser(c *fiber.Ctx) error {
 
 // API Untuk Delete Category
 func DeleteCategory(c *fiber.Ctx) error {
-	id := c.Params("id")
-
-	userLocal := c.Locals("user")
-	if userLocal == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{
 			Success: false,
-			Message: "Unauthorized: Token not found in context",
+			Message: "Unauthorized: Invalid User Session",
 			Error:   401,
 		})
 	}
 
-	userToken := c.Locals("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
+	id := c.Params("id")
 
 	var cat models.Category
 	if err := config.DB.Where("user_id = ?", userID).First(&cat, id).Error; err != nil {
@@ -130,20 +126,17 @@ func DeleteCategory(c *fiber.Ctx) error {
 
 // API Untuk Update Category
 func UpdateCategory(c *fiber.Ctx) error {
-	id := c.Params("id")
-
-	userLocal := c.Locals("user")
-	if userLocal == nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{
 			Success: false,
 			Message: "Unauthorized: Token not found in context",
 			Error:   401,
 		})
 	}
 
-	userToken := c.Locals("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
+	id := c.Params("id")
 
 	var cat models.Category
 	if err := config.DB.Where("user_id = ?", userID).First(&cat, id).Error; err != nil {

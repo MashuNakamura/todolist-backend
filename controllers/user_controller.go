@@ -154,12 +154,15 @@ func Login(c *fiber.Ctx) error {
 
 // API Untuk Update Profile
 func UpdateProfile(c *fiber.Ctx) error {
-	userToken, ok := c.Locals("user").(*jwt.Token)
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
 	if !ok {
-		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+		return c.Status(401).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Invalid User Session",
+			Error:   401,
+		})
 	}
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
 
 	var input models.User
 	if err := c.BodyParser(&input); err != nil {
@@ -335,12 +338,15 @@ func ResetPassword(c *fiber.Ctx) error {
 
 // API Untuk Change Password
 func ChangePassword(c *fiber.Ctx) error {
-	userToken, ok := c.Locals("user").(*jwt.Token)
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
 	if !ok {
-		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+		return c.Status(401).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Invalid User Session",
+			Error:   401,
+		})
 	}
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
 
 	var input models.ChangePassword
 	if err := c.BodyParser(&input); err != nil {
@@ -412,12 +418,15 @@ func ChangePassword(c *fiber.Ctx) error {
 
 // API Untuk Get Profile
 func GetProfile(c *fiber.Ctx) error {
-	userToken, ok := c.Locals("user").(*jwt.Token)
+	val := c.Locals("user_id")
+	userID, ok := val.(uint)
 	if !ok {
-		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+		return c.Status(401).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Invalid User Session",
+			Error:   401,
+		})
 	}
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := uint(claims["user_id"].(float64))
 
 	var user models.User
 	if err := config.DB.Select("id, name, email").First(&user, userID).Error; err != nil {
