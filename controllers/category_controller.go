@@ -4,6 +4,7 @@ import (
 	"github.com/MashuNakamura/todolist-backend/config"
 	"github.com/MashuNakamura/todolist-backend/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // API Untuk Create Category
@@ -137,9 +138,9 @@ func UpdateCategory(c *fiber.Ctx) error {
 	}
 
 	id := c.Params("id")
-
 	var cat models.Category
-	if err := config.DB.Where("user_id = ?", userID).First(&cat, id).Error; err != nil {
+
+	if err := config.DB.Where("id = ? AND user_id = ?", id, userID).First(&cat).Error; err != nil {
 		return c.Status(404).JSON(models.Ret{
 			Success: false,
 			Message: "Category not found",
@@ -147,6 +148,7 @@ func UpdateCategory(c *fiber.Ctx) error {
 		})
 	}
 
+	oldName := cat.Name
 	originalID := cat.ID
 
 	if err := c.BodyParser(&cat); err != nil {
@@ -172,17 +174,33 @@ func UpdateCategory(c *fiber.Ctx) error {
 		cat.Color = "#000000"
 	}
 
-	if err := config.DB.Save(&cat).Error; err != nil {
+	err := config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(&cat).Error; err != nil {
+			return err
+		}
+
+		if oldName != cat.Name {
+			if err := tx.Model(&models.Task{}).
+				Where("user_id = ? AND ? = ANY(tags)", userID, oldName).
+				Update("tags", gorm.Expr("array_replace(tags, ?, ?)", oldName, cat.Name)).
+				Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
 		return c.Status(500).JSON(models.Ret{
 			Success: false,
-			Message: "Failed to update category",
+			Message: "Failed to update category and sync tasks",
 			Error:   500,
 		})
 	}
 
 	return c.JSON(models.Ret{
 		Success: true,
-		Message: "Category updated successfully",
+		Message: "Category and associated tasks updated successfully",
 		Error:   200,
 		Data:    cat,
 	})
