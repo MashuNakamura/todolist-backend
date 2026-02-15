@@ -255,10 +255,15 @@ func ForgotPassword(c *fiber.Ctx) error {
 		})
 	}
 
-	println("==================================")
-	println("EMAIL KE:", user_cp.Email)
-	println("KODE OTP ANDA:", otp)
-	println("==================================")
+	// Send Email
+	emailBody := "Your OTP code is: " + otp
+	if err := helper.SendEmail(user_cp.Email, "Reset Password OTP", emailBody); err != nil {
+		return c.Status(500).JSON(models.Ret{
+			Success: false,
+			Message: "Failed to send email",
+			Error:   500,
+		})
+	}
 
 	return c.JSON(models.Ret{
 		Success: true,

@@ -1,7 +1,10 @@
 package helper
 
 import (
+	"fmt"
 	"math/rand"
+	"net/smtp"
+	"os"
 	"regexp"
 	"unicode"
 )
@@ -51,4 +54,22 @@ func GenerateOTP() string {
 		otp[i] = digits[rand.Intn(len(digits))]
 	}
 	return string(otp)
+}
+
+func SendEmail(to string, subject, body string) error {
+	from := os.Getenv("SMTP_USER")
+	password := os.Getenv("SMTP_PASS")
+	host := os.Getenv("SMTP_HOST")
+	port := os.Getenv("SMTP_PORT")
+
+	auth := smtp.PlainAuth("", from, password, host)
+
+	msg := []byte(fmt.Sprintf("To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"\r\n"+
+		"%s\r\n", to, subject, body))
+
+	addr := fmt.Sprintf("%s:%s", host, port)
+
+	return smtp.SendMail(addr, auth, from, []string{to}, msg)
 }

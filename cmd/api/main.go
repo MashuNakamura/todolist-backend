@@ -26,7 +26,7 @@ func main() {
 	app.Use(logger.New())
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:5173, https://todolist.vercel.app",
+		AllowOrigins:     "http://localhost:5173, https://todolist.vercel.app, https://koto-todolist.onrender.com, https://estimated-pavia-mashyren-91b0d232.koyeb.app/api/auth/google/callback",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, HEAD, PUT, DELETE, PATCH, OPTIONS",
 		AllowCredentials: true,
