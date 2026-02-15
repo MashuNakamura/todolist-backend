@@ -28,17 +28,16 @@ func SetupRoutes(app *fiber.App) {
 	protected.Post("/change-password", controllers.ChangePassword) // Change Password
 
 	// Task API Route
-	protected.Post("/tasks", controllers.CreateTask)                     // Create
-	protected.Get("/tasks", controllers.GetAllTasks)                     // Read All
-	protected.Get("/tasks/:id", controllers.GetTaskByID)                 // Read One
-	protected.Get("/tasks/user/:user_id", controllers.GetAllTasksByUser) // Read All by User
-	protected.Put("/tasks/:id", controllers.UpdateTask)                  // Update
-	protected.Delete("/tasks", controllers.DeleteTask)                   // Delete Batch Task
-	protected.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
+	protected.Post("/tasks", controllers.CreateTask)              // Create
+	protected.Get("/tasks", controllers.GetAllTasks)              // Read All
+	protected.Get("/tasks/:id", controllers.GetTaskByID)          // Read One
+	protected.Put("/tasks/:id", controllers.UpdateTask)           // Update
+	protected.Delete("/tasks", controllers.DeleteTask)            // Delete Batch Task
+	protected.Put("/tasks/status", controllers.UpdateBatchStatus) // Update Batch Status
 
 	// Category API Route
-	protected.Post("/categories", controllers.CreateCategory)                   // Create
-	protected.Get("/categories/user/:user_id", controllers.GetCategoriesByUser) // Read All
-	protected.Put("/categories/:id", controllers.UpdateCategory)                // Update
-	protected.Delete("/categories/:id", controllers.DeleteCategory)             // Delete
+	protected.Post("/categories", controllers.CreateCategory)       // Create
+	protected.Get("/categories", controllers.GetCategoriesByUser)   // Read All
+	protected.Put("/categories/:id", controllers.UpdateCategory)    // Update
+	protected.Delete("/categories/:id", controllers.DeleteCategory) // Delete
 }

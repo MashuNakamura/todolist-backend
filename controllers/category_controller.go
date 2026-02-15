@@ -4,10 +4,18 @@ import (
 	"github.com/MashuNakamura/todolist-backend/config"
 	"github.com/MashuNakamura/todolist-backend/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // API Untuk Create Category
 func CreateCategory(c *fiber.Ctx) error {
+	userToken, ok := c.Locals("user").(*jwt.Token)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+	}
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var cat models.Category
 	if err := c.BodyParser(&cat); err != nil {
 		return c.Status(400).JSON(models.Ret{
@@ -16,6 +24,8 @@ func CreateCategory(c *fiber.Ctx) error {
 			Error:   400,
 		})
 	}
+
+	cat.UserID = userID
 
 	if cat.Name == "" {
 		return c.Status(400).JSON(models.Ret{
@@ -47,9 +57,20 @@ func CreateCategory(c *fiber.Ctx) error {
 
 // API Untuk Get Category
 func GetCategoriesByUser(c *fiber.Ctx) error {
-	userID := c.Params("user_id")
-	var cats []models.Category
+	userLocal := c.Locals("user")
+	if userLocal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Token not found in context",
+			Error:   401,
+		})
+	}
 
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
+	var cats []models.Category
 	if err := config.DB.Where("user_id = ?", userID).Find(&cats).Error; err != nil {
 		return c.Status(500).JSON(models.Ret{
 			Success: false,
@@ -69,9 +90,22 @@ func GetCategoriesByUser(c *fiber.Ctx) error {
 // API Untuk Delete Category
 func DeleteCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
-	var cat models.Category
 
-	if err := config.DB.First(&cat, id).Error; err != nil {
+	userLocal := c.Locals("user")
+	if userLocal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Token not found in context",
+			Error:   401,
+		})
+	}
+
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
+	var cat models.Category
+	if err := config.DB.Where("user_id = ?", userID).First(&cat, id).Error; err != nil {
 		return c.Status(404).JSON(models.Ret{
 			Success: false,
 			Message: "Category not found",
@@ -97,15 +131,30 @@ func DeleteCategory(c *fiber.Ctx) error {
 // API Untuk Update Category
 func UpdateCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
-	var cat models.Category
 
-	if err := config.DB.First(&cat, id).Error; err != nil {
+	userLocal := c.Locals("user")
+	if userLocal == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(models.Ret{
+			Success: false,
+			Message: "Unauthorized: Token not found in context",
+			Error:   401,
+		})
+	}
+
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
+	var cat models.Category
+	if err := config.DB.Where("user_id = ?", userID).First(&cat, id).Error; err != nil {
 		return c.Status(404).JSON(models.Ret{
 			Success: false,
 			Message: "Category not found",
 			Error:   404,
 		})
 	}
+
+	originalID := cat.ID
 
 	if err := c.BodyParser(&cat); err != nil {
 		return c.Status(400).JSON(models.Ret{
@@ -114,6 +163,9 @@ func UpdateCategory(c *fiber.Ctx) error {
 			Error:   400,
 		})
 	}
+
+	cat.ID = originalID
+	cat.UserID = userID
 
 	if cat.Name == "" {
 		return c.Status(400).JSON(models.Ret{

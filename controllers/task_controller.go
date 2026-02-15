@@ -6,11 +6,16 @@ import (
 	"github.com/MashuNakamura/todolist-backend/config"
 	"github.com/MashuNakamura/todolist-backend/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/lib/pq"
 )
 
 // API Create Task
 func CreateTask(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var task models.Task
 
 	if err := c.BodyParser(&task); err != nil {
@@ -49,6 +54,8 @@ func CreateTask(c *fiber.Ctx) error {
 		task.Status = "todo"
 	}
 
+	task.UserID = userID
+
 	if err := config.DB.Create(&task).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
@@ -68,9 +75,13 @@ func CreateTask(c *fiber.Ctx) error {
 
 // API Get All Tasks
 func GetAllTasks(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var tasks []models.Task
 
-	if err := config.DB.Find(&tasks).Error; err != nil {
+	if err := config.DB.Where("user_id = ?", userID).Find(&tasks).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
 			Message: "Failed to get tasks",
@@ -89,9 +100,12 @@ func GetAllTasks(c *fiber.Ctx) error {
 
 // API GetAllTasks By Specify User
 func GetAllTasksByUser(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
 	var tasks []models.Task
 
-	if err := config.DB.Where("user_id = ?", c.Params("user_id")).Find(&tasks).Error; err != nil {
+	if err := config.DB.Where("user_id = ?", userID).Find(&tasks).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
 			Message: "Failed to get tasks",
@@ -110,9 +124,13 @@ func GetAllTasksByUser(c *fiber.Ctx) error {
 
 // API Get Task by ID
 func GetTaskByID(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var task models.Task
 
-	if err := config.DB.Where("id = ?", c.Params("id")).First(&task).Error; err != nil {
+	if err := config.DB.Where("id = ? AND user_id = ?", c.Params("id"), userID).First(&task).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
 			Message: "Failed to get task",
@@ -131,10 +149,14 @@ func GetTaskByID(c *fiber.Ctx) error {
 
 // API Edit Task by ID
 func UpdateTask(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	id := c.Params("id")
 
 	var task models.Task
-	if err := config.DB.Where("id = ?", id).First(&task).Error; err != nil {
+	if err := config.DB.Where("id = ? AND user_id = ?", id, userID).First(&task).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
 			Message: "Failed to get task",
@@ -199,6 +221,8 @@ func UpdateTask(c *fiber.Ctx) error {
 		task.Tags = pq.StringArray(updateTask.Tags)
 	}
 
+	task.UserID = userID
+
 	if err := config.DB.Save(&task).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
@@ -218,6 +242,10 @@ func UpdateTask(c *fiber.Ctx) error {
 
 // API Delete Task by ID (One or Many)
 func DeleteTask(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var req models.DeleteTask
 
 	if err := c.BodyParser(&req); err != nil {
@@ -236,7 +264,7 @@ func DeleteTask(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := config.DB.Where("id IN ?", req.IDs).Delete(&models.Task{}).Error; err != nil {
+	if err := config.DB.Where("id IN ? AND user_id = ?", req.IDs, userID).Delete(&models.Task{}).Error; err != nil {
 		return c.Status(500).JSON(models.Ret{
 			Success: false,
 			Message: "Failed to delete tasks",
@@ -253,6 +281,10 @@ func DeleteTask(c *fiber.Ctx) error {
 
 // API Untuk Update One or Many Status
 func UpdateBatchStatus(c *fiber.Ctx) error {
+	userToken := c.Locals("user").(*jwt.Token)
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
+
 	var req models.UpdateBatchStatus
 	if err := c.BodyParser(&req); err != nil {
 		return c.JSON(models.Ret{
@@ -270,7 +302,7 @@ func UpdateBatchStatus(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := config.DB.Model(&models.Task{}).Where("id IN ?", req.IDs).Update("status", req.Status).Error; err != nil {
+	if err := config.DB.Model(&models.Task{}).Where("id IN ? AND user_id = ?", req.IDs, userID).Update("status", req.Status).Error; err != nil {
 		return c.JSON(models.Ret{
 			Success: false,
 			Message: "Failed to update tasks",

@@ -74,6 +74,8 @@ func Register(c *fiber.Ctx) error {
 		})
 	}
 
+	newUser.Password = ""
+
 	return c.JSON(models.Ret{
 		Success: true,
 		Message: "User created successfully",
@@ -152,7 +154,12 @@ func Login(c *fiber.Ctx) error {
 
 // API Untuk Update Profile
 func UpdateProfile(c *fiber.Ctx) error {
-	userID := c.Locals("user_id")
+	userToken, ok := c.Locals("user").(*jwt.Token)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+	}
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
 
 	var input models.User
 	if err := c.BodyParser(&input); err != nil {
@@ -328,7 +335,12 @@ func ResetPassword(c *fiber.Ctx) error {
 
 // API Untuk Change Password
 func ChangePassword(c *fiber.Ctx) error {
-	userID := c.Locals("user_id")
+	userToken, ok := c.Locals("user").(*jwt.Token)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+	}
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
 
 	var input models.ChangePassword
 	if err := c.BodyParser(&input); err != nil {
@@ -400,7 +412,12 @@ func ChangePassword(c *fiber.Ctx) error {
 
 // API Untuk Get Profile
 func GetProfile(c *fiber.Ctx) error {
-	userID := c.Locals("user_id")
+	userToken, ok := c.Locals("user").(*jwt.Token)
+	if !ok {
+		return c.Status(401).JSON(models.Ret{Success: false, Message: "Unauthorized"})
+	}
+	claims := userToken.Claims.(jwt.MapClaims)
+	userID := uint(claims["user_id"].(float64))
 
 	var user models.User
 	if err := config.DB.Select("id, name, email").First(&user, userID).Error; err != nil {

@@ -46,7 +46,7 @@ func Protected(c *fiber.Ctx) error {
 		})
 	}
 
-	userID := claims["user_id"]
-	c.Locals("user_id", userID)
+	c.Locals("user", token)
+	c.Locals("user_id", uint(claims["user_id"].(float64)))
 	return c.Next()
 }
