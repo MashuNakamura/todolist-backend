@@ -324,7 +324,7 @@ func ForgotPassword(c *fiber.Ctx) error {
 				<p>If you did not request a password reset, please ignore this email.</p>
 			</div>
 			<div class="footer">
-				<p>&copy; %d Todolist Backend. All rights reserved.</p>
+				<p>&copy; %d Koto Todolist. All rights reserved.</p>
 			</div>
 		</div>
 	</body>
