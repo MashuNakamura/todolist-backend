@@ -14,10 +14,12 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/health", controllers.HealthCheck) // Health Check
 
 	// User API Route
-	api.Post("/register", controllers.Register)              // Register
-	api.Post("/login", controllers.Login)                    // Login
-	api.Post("/forgot-password", controllers.ForgotPassword) // Forgot Password
-	api.Post("/reset-password", controllers.ResetPassword)   // Reset Password
+	api.Post("/register", controllers.Register)                 // Register
+	api.Post("/login", controllers.Login)                       // Login
+	api.Post("/forgot-password", controllers.ForgotPassword)    // Forgot Password
+	api.Post("/reset-password", controllers.ResetPassword)      // Reset Password
+	api.Get("/auth/google/login", middleware.GoogleLogin)       // Redirect ke Google
+	api.Get("/auth/google/callback", middleware.GoogleCallback) // Callback dari Google
 
 	// Protected Route
 	protected := api.Group("/", middleware.Protected)
