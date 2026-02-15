@@ -33,7 +33,7 @@ func SetupRoutes(app *fiber.App) {
 	protected.Get("/tasks/:id", controllers.GetTaskByID)                 // Read One
 	protected.Get("/tasks/user/:user_id", controllers.GetAllTasksByUser) // Read All by User
 	protected.Put("/tasks/:id", controllers.UpdateTask)                  // Update
-	protected.Delete("/tasks/:id", controllers.DeleteTask)               // Delete
+	protected.Delete("/tasks", controllers.DeleteTask)                   // Delete Batch Task
 	protected.Put("/tasks/status", controllers.UpdateBatchStatus)        // Update Batch Status
 
 	// Category API Route
