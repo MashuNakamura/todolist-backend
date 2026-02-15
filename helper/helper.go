@@ -62,10 +62,16 @@ func SendEmail(to string, subject, body string) error {
 	host := os.Getenv("SMTP_HOST")
 	port := os.Getenv("SMTP_PORT")
 
+	if from == "" || password == "" || host == "" || port == "" {
+		return fmt.Errorf("SMTP configuration is missing. Please check SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS in your environment variables")
+	}
+
 	auth := smtp.PlainAuth("", from, password, host)
 
 	msg := []byte(fmt.Sprintf("To: %s\r\n"+
 		"Subject: %s\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=\"UTF-8\"\r\n"+
 		"\r\n"+
 		"%s\r\n", to, subject, body))
 
